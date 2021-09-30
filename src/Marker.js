@@ -62,7 +62,7 @@ export default {
   data: () => ({ unwatchArr: [] }),
 
   render() {
-    return this.$slots.balloon() && h('div', { style: 'display: none;' }, this.$slots.balloon());
+    return this.$slots.balloon && h('div', { style: 'display: none;' }, this.$slots.balloon());
   },
 
   mounted() {

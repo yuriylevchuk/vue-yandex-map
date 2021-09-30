@@ -290,7 +290,7 @@ export default {
             ref: 'markersContainer',
             class: 'ymap-markers',
           },
-          this.$slots.default(),
+          this.$slots.default && this.$slots.default(),
         ),
       ],
     );
