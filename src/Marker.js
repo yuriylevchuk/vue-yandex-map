@@ -1,4 +1,5 @@
 import * as utils from './utils';
+import { h } from 'vue'
 
 const MARKER_TYPES = [
   'placemark',
@@ -24,7 +25,10 @@ const markerEvents = [
 ];
 
 export default {
+  name: 'YmapMarker',
+
   inject: ['useObjectManager', 'addMarker', 'deleteMarker', 'compareValues'],
+
   props: {
     coords: Array,
     hintContent: String,
@@ -54,10 +58,13 @@ export default {
     properties: Object,
     options: Object,
   },
+
   data: () => ({ unwatchArr: [] }),
-  render(h) {
-    return this.$slots.balloon && h('div', { style: 'display: none;' }, [this.$slots.balloon]);
+
+  render() {
+    return this.$slots.balloon() && h('div', { style: 'display: none;' }, this.$slots.balloon());
   },
+
   mounted() {
     Object.keys(this.$props).forEach((prop) => {
       this.unwatchArr.push(this.$watch(
@@ -72,6 +79,7 @@ export default {
 
     this.addMarker(this.defineMarker());
   },
+
   methods: {
     defineMarker() {
       let balloonOptions = {};
@@ -186,7 +194,8 @@ export default {
       return mapMarker;
     },
   },
-  beforeDestroy() {
+
+  beforeUnmount() {
     this.unwatchArr.forEach(f => f());
     this.deleteMarker(this.markerId);
   },

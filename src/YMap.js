@@ -1,4 +1,5 @@
 import * as utils from './utils';
+import { h } from 'vue'
 
 const { emitter } = utils;
 
@@ -18,7 +19,10 @@ const mapEvents = [
 ];
 
 export default {
+  name: 'YandexMap',
+
   pluginOptions: {},
+
   provide() {
     let deletedMarkers = [];
     let changedMarkers = [];
@@ -49,6 +53,7 @@ export default {
       compareValues,
     };
   },
+
   data() {
     return {
       ymapId: `yandexMap${Math.round(Math.random() * 100000)}`,
@@ -59,6 +64,7 @@ export default {
       markers: [],
     };
   },
+
   props: {
     coords: {
       type: Array,
@@ -142,22 +148,24 @@ export default {
     showAllMarkers: Boolean,
     disablePan: Boolean,
   },
+
   computed: {
     coordinates() {
       return this.coords.map(item => +item);
     },
   },
+
   methods: {
     init() {
       // if ymap isn't initialized or have no markers;
-      if (!window.ymaps
-        || !ymaps.GeoObjectCollection
+      if (!window.window.ymaps
+        || !window.ymaps.GeoObjectCollection
         || (!this.initWithoutMarkers && !this.$slots.default && !this.placemarks.length)
       ) return;
 
       this.$emit('map-initialization-started');
 
-      this.myMap = new ymaps.Map(this.ymapId, {
+      this.myMap = new window.ymaps.Map(this.ymapId, {
         center: this.coordinates,
         zoom: +this.zoom,
         bounds: this.bounds,
@@ -241,12 +249,15 @@ export default {
       this.$emit('markers-was-delete', deletedMarkersIds);
     },
   },
+
   watch: {
     coordinates(val) {
       if (this.disablePan) {
-        if (this.myMap.setCenter) this.myMap.setCenter(val)
-      } else {
-        if (this.myMap.panTo && this.myMap.getZoom()) this.myMap.panTo(val, { checkZoomRange: true })
+        if (this.myMap.setCenter) {
+          this.myMap.setCenter(val);
+        }
+      } else if (this.myMap.panTo && this.myMap.getZoom()) {
+        this.myMap.panTo(val, { checkZoomRange: true });
       }
     },
     zoom() {
@@ -256,7 +267,8 @@ export default {
       if (this.myMap.setBounds) this.myMap.setBounds(val);
     },
   },
-  render(h) {
+
+  render() {
     return h(
       'section',
       {
@@ -267,28 +279,23 @@ export default {
         h(
           'div',
           {
-            attrs: {
-              id: this.ymapId,
-              class: this.ymapClass,
-              style: this.style,
-            },
+            id: this.ymapId,
+            class: this.ymapClass,
+            style: this.style,
           },
         ),
         this.isReady && h(
           'div',
           {
             ref: 'markersContainer',
-            attrs: {
-              class: 'ymap-markers',
-            },
+            class: 'ymap-markers',
           },
-          [
-            this.$slots.default,
-          ],
+          this.$slots.default(),
         ),
       ],
     );
   },
+
   mounted() {
     if (this.$attrs['map-link'] || this.$attrs.mapLink) throw new Error('Vue-yandex-maps: Attribute mapLink is not supported. Use settings.');
 
@@ -314,14 +321,15 @@ export default {
       utils.ymapLoader(settings);
     }
     if (emitter.ymapReady) {
-      ymaps.ready(this.init);
+      window.ymaps.ready(this.init);
     } else {
       emitter.$on('scriptIsLoaded', () => {
-        ymaps.ready(this.init);
+        window.ymaps.ready(this.init);
       });
     }
   },
-  beforeDestroy() {
+
+  beforeMounted() {
     if (this.myMap.geoObjects) this.myMap.geoObjects.removeAll();
   },
 };
