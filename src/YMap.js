@@ -158,7 +158,7 @@ export default {
   methods: {
     init() {
       // if ymap isn't initialized or have no markers;
-      if (!window.window.ymaps
+      if (!window.ymaps
         || !window.ymaps.GeoObjectCollection
         || (!this.initWithoutMarkers && !this.$slots.default && !this.placemarks.length)
       ) return;
@@ -329,7 +329,7 @@ export default {
     }
   },
 
-  beforeMounted() {
+  beforeUnmount() {
     if (this.myMap.geoObjects) this.myMap.geoObjects.removeAll();
   },
 };
