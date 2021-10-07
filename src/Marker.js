@@ -92,7 +92,7 @@ export default {
 
       if (this.$slots.balloon) {
         const BalloonContentLayoutClass = ymaps.templateLayoutFactory
-          .createClass(this.$slots.balloon[0].elm.outerHTML);
+          .createClass(this.$slots.balloon()[0].elm.outerHTML);
         balloonOptions = { balloonContentLayout: BalloonContentLayoutClass };
       }
 

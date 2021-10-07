@@ -29,7 +29,7 @@ export default {
     let deleteMarkerWithTimeout;
     let changeMarkersWithTimeout;
     const deleteMarker = (id) => {
-      if (!this.myMap.geoObjects) return;
+      if (!this.$options.myMap.geoObjects) return;
       deletedMarkers.push(id);
       if (deleteMarkerWithTimeout) clearTimeout(deleteMarkerWithTimeout);
       deleteMarkerWithTimeout = setTimeout(() => {
@@ -57,13 +57,14 @@ export default {
   data() {
     return {
       ymapId: `yandexMap${Math.round(Math.random() * 100000)}`,
-      myMap: {},
       style: this.ymapClass ? '' : 'width: 100%; height: 100%;',
       isReady: false,
       debounce: null,
-      markers: [],
     };
   },
+
+  myMap: {},
+  markers: [],
 
   props: {
     coords: {
@@ -165,7 +166,7 @@ export default {
 
       this.$emit('map-initialization-started');
 
-      this.myMap = new window.ymaps.Map(this.ymapId, {
+      this.$options.myMap = new window.ymaps.Map(this.ymapId, {
         center: this.coordinates,
         zoom: +this.zoom,
         bounds: this.bounds,
@@ -173,8 +174,8 @@ export default {
         controls: this.controls,
         type: `yandex#${this.mapType}`,
       }, this.options);
-      mapEvents.forEach(_ => this.myMap.events.add(_, e => this.$emit(_, e)));
-      this.myMap.events.add('boundschange', (e) => {
+      mapEvents.forEach(_ => this.$options.myMap.events.add(_, e => this.$emit(_, e)));
+      this.$options.myMap.events.add('boundschange', (e) => {
         const { originalEvent: { newZoom, newCenter, newBounds } } = e;
         this.$emit('boundschange', e);
         this.$emit('update:zoom', newZoom);
@@ -184,44 +185,44 @@ export default {
       if (this.detailedControls) {
         const controls = Object.keys(this.detailedControls);
         controls.forEach((controlName) => {
-          this.myMap.controls.remove(controlName);
-          this.myMap.controls.add(controlName, this.detailedControls[controlName]);
+          this.$options.myMap.controls.remove(controlName);
+          this.$options.myMap.controls.add(controlName, this.detailedControls[controlName]);
         });
       }
       if (this.scrollZoom === false) {
-        this.myMap.behaviors.disable('scrollZoom');
+        this.$options.myMap.behaviors.disable('scrollZoom');
       }
 
       this.isReady = true;
 
-      this.$emit('map-was-initialized', this.myMap);
+      this.$emit('map-was-initialized', this.$options.myMap);
     },
     addMarker(marker) {
-      this.markers.push(marker);
+      this.$options.markers.push(marker);
       if (this.debounce) clearTimeout(this.debounce);
       this.debounce = setTimeout(() => {
-        this.setMarkers(this.markers);
+        this.setMarkers(this.$options.markers);
       }, 0);
     },
     setMarkers(markers) {
       const config = {
         options: this.clusterOptions,
         callbacks: this.clusterCallbacks,
-        map: this.myMap,
+        map: this.$options.myMap,
         useObjectManager: this.useObjectManager,
         objectManagerClusterize: this.objectManagerClusterize,
       };
-      if (this.markers !== markers) {
+      if (this.$options.markers !== markers) {
         const ids = markers.map(_ => (this.useObjectManager ? _.id : _.properties.get('markerId')));
         this.deleteMarkers(ids);
         utils.addToMap(markers, config);
         this.$emit('markers-was-change', ids);
       } else utils.addToMap(markers, config);
-      this.markers = [];
-      if (this.showAllMarkers) this.myMap.setBounds(this.myMap.geoObjects.getBounds());
+      this.$options.markers = [];
+      if (this.showAllMarkers) this.$options.myMap.setBounds(this.$options.myMap.geoObjects.getBounds());
     },
     deleteMarkers(deletedMarkersIds) {
-      this.myMap.geoObjects.each((collection) => {
+      this.$options.myMap.geoObjects.each((collection) => {
         const removedMarkers = [];
         if (this.useObjectManager) {
           collection.remove(deletedMarkersIds);
@@ -240,7 +241,7 @@ export default {
             length = markersArray.length;
           }
           if (length === 0 || length === removedMarkers.length) {
-            this.myMap.geoObjects.remove(collection);
+            this.$options.myMap.geoObjects.remove(collection);
           } else if (removedMarkers.length) {
             removedMarkers.forEach(marker => collection.remove(marker));
           }
@@ -253,18 +254,18 @@ export default {
   watch: {
     coordinates(val) {
       if (this.disablePan) {
-        if (this.myMap.setCenter) {
-          this.myMap.setCenter(val);
+        if (this.$options.myMap.setCenter) {
+          this.$options.myMap.setCenter(val);
         }
-      } else if (this.myMap.panTo && this.myMap.getZoom()) {
-        this.myMap.panTo(val, { checkZoomRange: true });
+      } else if (this.$options.myMap.panTo && this.$options.myMap.getZoom()) {
+        this.$options.myMap.panTo(val, { checkZoomRange: true });
       }
     },
     zoom() {
-      this.myMap.setZoom(this.zoom);
+      this.$options.myMap.setZoom(this.zoom);
     },
     bounds(val) {
-      if (this.myMap.setBounds) this.myMap.setBounds(val);
+      if (this.$options.myMap.setBounds) this.$options.myMap.setBounds(val);
     },
   },
 
@@ -302,7 +303,7 @@ export default {
     if (this.placemarks && this.placemarks.length) throw new Error('Vue-yandex-maps: Attribute placemarks is not supported. Use marker component.');
 
     this.mapObserver = new MutationObserver((() => {
-      if (this.myMap.container) this.myMap.container.fitToViewport();
+      if (this.$options.myMap.container) this.$options.myMap.container.fitToViewport();
     }));
 
     // Setup the observer
@@ -330,6 +331,6 @@ export default {
   },
 
   beforeUnmount() {
-    if (this.myMap.geoObjects) this.myMap.geoObjects.removeAll();
+    if (this.$options.myMap.geoObjects) this.$options.myMap.geoObjects.removeAll();
   },
 };
