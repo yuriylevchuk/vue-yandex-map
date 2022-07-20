@@ -319,7 +319,11 @@ export default {
     if (emitter.scriptIsNotAttached) {
       const { debug } = this;
       const settings = { ...this.$options.pluginOptions, ...this.settings, debug };
-      utils.ymapLoader(settings);
+      try {
+        utils.ymapLoader(settings);
+      } catch (error) {
+        this.$emit('map-error', error);
+      }
     }
     if (emitter.ymapReady) {
       window.ymaps.ready(this.init);
