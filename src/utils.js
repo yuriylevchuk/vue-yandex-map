@@ -227,7 +227,7 @@ export function ymapLoader(settings = {}) {
         emitter.ymapReady = true;
         emitter.$emit('scriptIsLoaded');
         res();
-      });
+      }, rej);
     };
     yandexMapScript.onerror = rej;
   });
